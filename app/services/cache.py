@@ -4,6 +4,8 @@ import json
 import logging
 from typing import Optional, Any
 from app.core.config import settings
+from app.core.logger import logger
+
 
 logger = logging.getLogger(__name__)
 
@@ -11,19 +13,16 @@ class CacheService:
     def __init__(self):
         try:
             self.redis_client = redis.from_url(settings.redis_url, decode_responses=True)
-            # Test connection
-            self.redis_client.ping()
             self.is_available = True
-            logger.info("Redis connection established")
+            logger.info("Redis client created")
         except Exception as e:
-            logger.warning(f"Redis connection failed: {e}")
+            logger.warning(f"Failed to create Redis client: {e}")
             self.redis_client = None
             self.is_available = False
 
     async def get(self, key: str) -> Optional[Any]:
         if not self.is_available:
             return None
-        
         try:
             data = self.redis_client.get(key)
             return json.loads(data) if data else None
@@ -34,7 +33,6 @@ class CacheService:
     async def set(self, key: str, value: Any, ttl: int = 3600) -> bool:
         if not self.is_available:
             return False
-        
         try:
             self.redis_client.setex(key, ttl, json.dumps(value, default=str))
             return True
@@ -45,7 +43,6 @@ class CacheService:
     async def delete(self, key: str) -> bool:
         if not self.is_available:
             return False
-        
         try:
             self.redis_client.delete(key)
             return True

@@ -7,6 +7,8 @@ from app.schemas.book import BookCreate, BookResponse
 from app.services.book_service import BookService
 from app.utils.exceptions import DatabaseException
 import logging
+from app.core.logger import logger
+
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

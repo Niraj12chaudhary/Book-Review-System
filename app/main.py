@@ -1,8 +1,8 @@
-# app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import books, reviews
 from app.core.config import settings
+from app.services.cache import cache_service  # 👈 Import CacheService
 import logging
 
 # Configure logging
@@ -30,13 +30,27 @@ app.add_middleware(
 app.include_router(books.router, prefix="/books", tags=["books"])
 app.include_router(reviews.router, tags=["reviews"])
 
+
+@app.on_event("startup")
+async def startup_event():
+    """
+    Runs when the app starts. Checks if Redis cache is connected.
+    """
+    if cache_service.is_available:
+        logger.info(" Redis connection established successfully.")
+    else:
+        logger.warning(" Redis connection failed. Cache will not work.")
+
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Book Review Service", "docs": "/docs"}
 
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "service": settings.app_name}
+
 
 if __name__ == "__main__":
     import uvicorn

@@ -47,3 +47,4 @@ coverage.xml
 
 # Jupyter Notebook checkpoints (if ever used)
 .ipynb_checkpoints/
+logs/

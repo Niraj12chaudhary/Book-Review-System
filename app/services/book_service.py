@@ -8,6 +8,8 @@ from app.schemas.book import BookCreate
 from app.schemas.review import ReviewCreate
 from app.services.cache import cache_service
 import logging
+from app.core.logger import logger
+
 
 logger = logging.getLogger(__name__)
 
