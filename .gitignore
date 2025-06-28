@@ -1,0 +1,49 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# Virtual environments
+venv/
+.env/
+.env.bak/
+.venv/
+
+# IDE specific folders
+.vscode/
+.idea/
+
+# Mac and Windows OS files
+.DS_Store
+Thumbs.db
+
+# Alembic migration cache files
+migrations/versions/__pycache__/
+
+# Pytest cache
+.pytest_cache/
+
+# Logs
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+
+# SQLite database (if used)
+*.sqlite3
+
+# MySQL/Postgres dump files (if accidentally created)
+*.sql
+*.dump
+
+# VS Code settings and history
+*.code-workspace
+
+# Jupyter Notebook checkpoints (if ever used)
+.ipynb_checkpoints/
