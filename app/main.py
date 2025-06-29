@@ -1,8 +1,9 @@
+# app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import books, reviews
 from app.core.config import settings
-from app.services.cache import cache_service  # 👈 Import CacheService
+from app.services.cache import cache_service
 import logging
 
 # Configure logging
@@ -26,9 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Include routers with proper prefixes
 app.include_router(books.router, prefix="/books", tags=["books"])
-app.include_router(reviews.router, tags=["reviews"])
+app.include_router(reviews.router, prefix="/books", tags=["reviews"])  # ← Added prefix here!
 
 
 @app.on_event("startup")

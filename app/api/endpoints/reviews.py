@@ -1,42 +1,53 @@
-# app/api/endpoints/books.py
+# app/api/endpoints/reviews.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
-from app.schemas.book import BookCreate, BookResponse
+from app.schemas.review import ReviewCreate, ReviewResponse
 from app.services.book_service import BookService
-from app.utils.exceptions import DatabaseException
+from app.utils.exceptions import BookNotFoundException, DatabaseException
 import logging
-from app.core.logger import logger
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-@router.get("/", response_model=List[BookResponse])
-async def get_all_books(db: Session = Depends(get_db)):
+# Remove the /books prefix from the routes since they should be mounted under /books
+@router.get("/{book_id}/reviews", response_model=List[ReviewResponse])
+def get_book_reviews(book_id: int, db: Session = Depends(get_db)):
     """
-    Retrieve all books with caching support.
+    Retrieve all reviews for a specific book.
     
-    This endpoint first attempts to retrieve books from Redis cache.
-    If cache is unavailable or data is not found, it falls back to the database.
+    Returns reviews sorted by creation date (newest first).
     """
     try:
-        books = await BookService.get_all_books(db)
-        return books
+        # Check if book exists
+        book = BookService.get_book_by_id(db, book_id)
+        if not book:
+            raise BookNotFoundException(book_id)
+        
+        reviews = BookService.get_reviews_by_book_id(db, book_id)
+        return reviews
+    except BookNotFoundException:
+        raise
     except Exception as e:
-        logger.error(f"Error retrieving books: {e}")
-        raise DatabaseException("Failed to retrieve books")
+        logger.error(f"Error retrieving reviews for book {book_id}: {e}")
+        raise DatabaseException("Failed to retrieve reviews")
 
-@router.post("/", response_model=BookResponse, status_code=status.HTTP_201_CREATED)
-async def create_book(book_data: BookCreate, db: Session = Depends(get_db)):
+@router.post("/{book_id}/reviews", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
+async def create_book_review(book_id: int, review_data: ReviewCreate, db: Session = Depends(get_db)):
     """
-    Create a new book.
-    
-    This endpoint creates a new book and invalidates the books cache.
+    Create a new review for a specific book.
     """
     try:
-        book = await BookService.create_book(db, book_data)
-        return book
+        # Check if book exists
+        book = BookService.get_book_by_id(db, book_id)
+        if not book:
+            raise BookNotFoundException(book_id)
+        
+        review = await BookService.create_review(db, book_id, review_data)
+        return review
+    except BookNotFoundException:
+        raise
     except Exception as e:
-        logger.error(f"Error creating book: {e}")
-        raise DatabaseException("Failed to create book")
+        logger.error(f"Error creating review for book {book_id}: {e}")
+        raise DatabaseException("Failed to create review")
